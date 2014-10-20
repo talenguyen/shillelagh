@@ -28,6 +28,8 @@ buildscript {
     classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:0.5'
     classpath 'org.jfrog.buildinfo:build-info-extractor-gradle:2.2.5'
     classpath "org._10ne.gradle:rest-gradle-plugin:0.3.1"
+      // the latest version of the android-apt plugin
+      classpath 'com.neenbedankt.gradle.plugins:android-apt:1.4'
   }
 }
 

@@ -15,6 +15,7 @@
  */
 
 apply plugin: 'com.android.application'
+apply plugin: 'com.neenbedankt.android-apt'
 
 android {
   compileSdkVersion 19
@@ -36,8 +37,15 @@ android {
 
 dependencies {
   compile project(':shillelagh')
-  provided project(':shillelagh-processor')
+  apt project(':shillelagh-processor')
 
   compile 'com.netflix.rxjava:rxjava-core:0.20.4'
   compile 'com.netflix.rxjava:rxjava-android:0.20.4'
+}
+
+apt {
+    arguments {
+        resourcePackageName android.defaultConfig.packageName
+        androidManifestFile variant.processResources.manifestFile
+    }
 }

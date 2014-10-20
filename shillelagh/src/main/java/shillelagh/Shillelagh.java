@@ -307,7 +307,6 @@ public final class Shillelagh {
    * The equivalent of calling
    * {@link SQLiteDatabase#query(boolean, String, String[], String, String[], String, String,
    * String, String, android.os.CancellationSignal)}
-   * <p/>
    * Only available for API 16+
    */
   @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
@@ -324,7 +323,6 @@ public final class Shillelagh {
    * {@link SQLiteDatabase#query(boolean, String, String[], String, String[], String, String,
    * String, String, android.os.CancellationSignal)}
    * and then calling {@link Shillelagh#map(Class, android.database.Cursor)} on the result
-   * <p/>
    * Only available for API 16+
    */
   @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
@@ -485,7 +483,6 @@ public final class Shillelagh {
 
   /**
    * Equivalent to calling {@link SQLiteDatabase#rawQuery(String, String[], CancellationSignal)}
-   * <p/>
    * Only available for API 16+
    */
   @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
@@ -498,7 +495,6 @@ public final class Shillelagh {
   /**
    * Equivalent to calling {@link SQLiteDatabase#rawQuery(String, String[], CancellationSignal)}
    * and then passing the result to {@link Shillelagh#map(Class, android.database.Cursor)}
-   * <p/>
    * Only available for API 16+
    */
   @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
