@@ -38,6 +38,7 @@ import shillelagh.TypeAdapter;
 import static javax.lang.model.element.Modifier.FINAL;
 import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.STATIC;
+import static shillelagh.Shillelagh.$$CREATE_NEW_OBJECT_FUNCTION;
 import static shillelagh.Shillelagh.$$CREATE_STATEMENT_FUNCTION;
 import static shillelagh.Shillelagh.$$CREATE_TABLE_FUNCTION;
 import static shillelagh.Shillelagh.$$DELETE_OBJECT_FUNCTION;
@@ -157,17 +158,21 @@ class TableObject {
         .emitImports(ByteArrayInputStream.class, ByteArrayOutputStream.class, IOException.class,
             ObjectInputStream.class, ObjectOutputStream.class, LinkedList.class, Date.class,
             List.class)
-        .beginType(className, "class", EnumSet.of(PUBLIC, FINAL), null, TypeAdapter.class.getName());
+        .beginType(className, "class", EnumSet.of(PUBLIC, FINAL), null, String.format("%s<%s>", TypeAdapter.class.getName(), getTargetClass()));
 
     if (this.isChildTable) {
       emitParentInsert(javaWriter);
       emitSelectAll(javaWriter);
     }
-    emitInsert(javaWriter);
-    emitOneToOneInsert(javaWriter);
-    emitGetId(javaWriter);
-    emitCreateTable(javaWriter);
-    emitGetCreateStatement(javaWriter);
+      // Implement TypeAdapter
+      emitGetCreateStatement(javaWriter);
+      emitNewObject(javaWriter);
+
+
+      emitInsert(javaWriter);
+      emitOneToOneInsert(javaWriter);
+      emitGetId(javaWriter);
+      emitCreateTable(javaWriter);
     emitDropTable(javaWriter);
     emitUpdate(javaWriter);
     emitUpdateColumnId(javaWriter);
@@ -179,8 +184,7 @@ class TableObject {
     emitByteArraySerialization(javaWriter);
     javaWriter.endType();
   }
-
-  /** Create a way to get an id for foreign keys */
+    /** Create a way to get an id for foreign keys */
   private void emitGetId(JavaWriter javaWriter) throws IOException {
     logger.d("emitGetId");
     javaWriter.beginMethod(
@@ -207,7 +211,15 @@ class TableObject {
         .endMethod();
   }
 
-  /** Creates the function dropping the table */
+    private void emitNewObject(JavaWriter javaWriter) throws IOException {
+        logger.d("emitCreateTable");
+        javaWriter.beginMethod(
+                getTargetClass(), $$CREATE_NEW_OBJECT_FUNCTION, EnumSet.of(PUBLIC))
+                .emitStatement("return new %s()", getTargetClass())
+                .endMethod();
+    }
+
+    /** Creates the function dropping the table */
   private void emitDropTable(JavaWriter javaWriter) throws IOException {
     logger.d("emitDropTable");
     javaWriter.beginMethod(
