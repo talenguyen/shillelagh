@@ -33,11 +33,12 @@ import java.util.List;
 
 import javax.lang.model.element.Element;
 
-import shillelagh.Shillelagh;
+import shillelagh.TypeAdapter;
 
 import static javax.lang.model.element.Modifier.FINAL;
 import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.STATIC;
+import static shillelagh.Shillelagh.$$CREATE_STATEMENT_FUNCTION;
 import static shillelagh.Shillelagh.$$CREATE_TABLE_FUNCTION;
 import static shillelagh.Shillelagh.$$DELETE_OBJECT_FUNCTION;
 import static shillelagh.Shillelagh.$$DROP_TABLE_FUNCTION;
@@ -156,7 +157,7 @@ class TableObject {
         .emitImports(ByteArrayInputStream.class, ByteArrayOutputStream.class, IOException.class,
             ObjectInputStream.class, ObjectOutputStream.class, LinkedList.class, Date.class,
             List.class)
-        .beginType(className, "class", EnumSet.of(PUBLIC, FINAL));
+        .beginType(className, "class", EnumSet.of(PUBLIC, FINAL), null, TypeAdapter.class.getName());
 
     if (this.isChildTable) {
       emitParentInsert(javaWriter);
@@ -166,6 +167,7 @@ class TableObject {
     emitOneToOneInsert(javaWriter);
     emitGetId(javaWriter);
     emitCreateTable(javaWriter);
+    emitGetCreateStatement(javaWriter);
     emitDropTable(javaWriter);
     emitUpdate(javaWriter);
     emitUpdateColumnId(javaWriter);
@@ -193,6 +195,15 @@ class TableObject {
     javaWriter.beginMethod(
         "void", $$CREATE_TABLE_FUNCTION, EnumSet.of(PUBLIC, STATIC), "SQLiteDatabase", "db")
         .emitStatement("db.execSQL(\"%s\")", getSchema())
+        .endMethod();
+  }
+
+  /** Creates the function for creating the table */
+  private void emitGetCreateStatement(JavaWriter javaWriter) throws IOException {
+    logger.d("emitCreateTable");
+    javaWriter.beginMethod(
+        "String", $$CREATE_STATEMENT_FUNCTION, EnumSet.of(PUBLIC))
+        .emitStatement("return \"%s\"", getSchema())
         .endMethod();
   }
 

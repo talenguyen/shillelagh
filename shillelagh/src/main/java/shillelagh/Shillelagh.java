@@ -40,6 +40,7 @@ public final class Shillelagh {
    */
   public static final String $$SUFFIX = "$$Shillelagh";
   public static final String $$CREATE_TABLE_FUNCTION = "createTable";
+  public static final String $$CREATE_STATEMENT_FUNCTION = "getCreateStatement";
   public static final String $$DROP_TABLE_FUNCTION = "dropTable";
   public static final String $$INSERT_OBJECT_FUNCTION = "insertObject";
   public static final String $$UPDATE_OBJECT_FUNCTION = "updateObject";

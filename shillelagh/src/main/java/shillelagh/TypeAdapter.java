@@ -15,4 +15,5 @@ public interface TypeAdapter<T> {
     T newObject();
 
     ContentValues asContentValues(T target);
+
 }
