@@ -167,6 +167,7 @@ class TableObject {
       // Implement TypeAdapter
       emitGetCreateStatement(javaWriter);
       emitNewObject(javaWriter);
+      emitAsContentValues(javaWriter);
 
 
       emitInsert(javaWriter);
@@ -226,6 +227,37 @@ class TableObject {
         "void", $$DROP_TABLE_FUNCTION, EnumSet.of(PUBLIC, STATIC), "SQLiteDatabase", "db")
         .emitStatement("db.execSQL(\"DROP TABLE IF EXISTS %s\")", getTableName())
         .endMethod();
+  }
+
+  /** Creates the function for inserting a new value into the database */
+  private void emitAsContentValues(JavaWriter javaWriter) throws IOException {
+    logger.d("emitInsert");
+    String tableName = getTableName();
+    javaWriter.beginMethod("ContentValues", "asContentValues", EnumSet.of(PUBLIC),
+        getTargetClass(), "target")
+        .emitStatement("ContentValues values = new ContentValues()");
+    List<TableColumn> childColumns = Lists.newLinkedList();
+    for (TableColumn column : columns) {
+      String columnName = column.getColumnName();
+      if (column.isBlob() && !column.isByteArray()) {
+        javaWriter.emitStatement("values.put(\"%s\", %s(target.%s))", columnName,
+            SERIALIZE_FUNCTION, columnName);
+      } else if (column.isOneToOne()) {
+//        javaWriter.emitStatement("%s%s.%s(target.%s, db)", column.getType(),
+//            $$SUFFIX, INSERT_ONE_TO_ONE, column.getColumnName())
+//            .emitStatement("values.put(\"%s\", %s%s.%s(target.%s))", columnName,
+//                column.getType(), $$SUFFIX, GET_ID_FUNCTION, columnName);
+      } else if (column.isDate()) {
+        javaWriter.emitStatement(
+            "values.put(\"%s\", target.%s.getTime())", columnName, columnName);
+      } else if (column.isOneToMany()) {
+//        childColumns.add(column);
+      } else if (!column.isOneToManyChild()) {
+        javaWriter.emitStatement("values.put(\"%s\", target.%s)", columnName, columnName);
+      }
+    }
+    javaWriter.emitStatement("return %s", "values");
+    javaWriter.endMethod();
   }
 
   /** Creates the function for inserting a new value into the database */
