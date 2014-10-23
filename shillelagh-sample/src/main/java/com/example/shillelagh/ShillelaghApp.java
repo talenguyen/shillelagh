@@ -30,8 +30,10 @@ public class ShillelaghApp extends Application {
 
   /** Shillelagh Singleton */
   private Shillelagh shillelagh;
+    private SQLiteOpenHelper sqliteOpenHelper;
 
-  @Override public void onCreate() {
+    @Override
+    public void onCreate() {
     super.onCreate();
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
@@ -45,9 +47,13 @@ public class ShillelaghApp extends Application {
           .build());
     }
 
-    SQLiteOpenHelper sqliteOpenHelper = new ExampleSqliteHelper(this);
+        sqliteOpenHelper = new ExampleSqliteHelper(this);
     shillelagh = new Shillelagh(sqliteOpenHelper);
   }
+
+    public synchronized SQLiteOpenHelper getSqlOpenHelper() {
+        return sqliteOpenHelper;
+    }
 
   /** Returns the instance of shillelagh for this application */
   public Shillelagh getShillelagh() {
