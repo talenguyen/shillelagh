@@ -10,6 +10,8 @@ public interface TypeAdapter<T> {
 
     String getCreateStatement();
 
+    String geTableName();
+
     void map(Cursor cursor, T target);
 
     T newObject();

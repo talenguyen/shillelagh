@@ -24,7 +24,7 @@ import com.example.shillelagh.model.Author;
 import com.example.shillelagh.model.Book;
 import com.example.shillelagh.model.Chapter;
 
-import shillelagh.Shillelagh;
+import shillelagh.DatabaseHelper;
 
 public class ExampleSqliteHelper extends SQLiteOpenHelper {
   private static final String DATABASE_NAME = "shillelagh_example.db";
@@ -35,16 +35,16 @@ public class ExampleSqliteHelper extends SQLiteOpenHelper {
   }
 
   @Override public void onCreate(SQLiteDatabase db) {
-    Shillelagh.createTable(db, Author.class);
-    Shillelagh.createTable(db, Book.class);
-    Shillelagh.createTable(db, Chapter.class);
+      DatabaseHelper.createTable(db, Author.class);
+      DatabaseHelper.createTable(db, Book.class);
+      DatabaseHelper.createTable(db, Chapter.class);
   }
 
   @Override public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     // Simplistic solution, you will lose your data though, good for debug builds bad for prod
-    Shillelagh.dropTable(db, Author.class);
-    Shillelagh.dropTable(db, Book.class);
-    Shillelagh.dropTable(db, Chapter.class);
+      DatabaseHelper.dropTable(db, Author.class);
+      DatabaseHelper.dropTable(db, Book.class);
+      DatabaseHelper.dropTable(db, Chapter.class);
     onCreate(db);
   }
 }
