@@ -16,6 +16,8 @@
 
 package shillelagh;
 
+import android.content.ContentValues;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
@@ -34,15 +36,71 @@ public final class DatabaseHelper {
         db.execSQL(adapter.getCreateStatement());
     }
 
+    /**
+     * Execute a sql statement to drop the exists table.
+     *
+     * @param db    SQLiteDatabase object which will execute sql.
+     * @param clazz The class map to the table.
+     */
     public static void dropTable(SQLiteDatabase db, Class clazz) {
         final TypeAdapter adapter = getAdapter(clazz);
-        db.execSQL(String.format("DROP TABLE IF EXISTS %s", adapter.geTableName()));
+        db.execSQL(String.format("DROP TABLE IF EXISTS %s", adapter.getTableName()));
     }
 
-    public static long insert(SQLiteOpenHelper helper, Object target) {
+    /**
+     * Insert a object into database.
+     *
+     * @param helper SQLiteOpenHelper object. Which will be used to open database
+     * @param item   The object to be insert.
+     * @return The id of the inserted object.
+     */
+    public static long insert(SQLiteOpenHelper helper, Object item) {
         final SQLiteDatabase database = helper.getWritableDatabase();
-        final TypeAdapter adapter = getAdapter(target.getClass());
-        return database.insert(adapter.geTableName(), null, adapter.asContentValues(target));
+        final TypeAdapter adapter = getAdapter(item.getClass());
+        return database.insert(adapter.getTableName(), null, adapter.asContentValues(item));
+    }
+
+    public static int update(SQLiteOpenHelper helper, Class<?> clazz, ContentValues values, String whereClause, String[] whereArgs) {
+        final SQLiteDatabase database = helper.getWritableDatabase();
+        final TypeAdapter adapter = getAdapter(clazz);
+        return database.update(adapter.getTableName(), values, whereClause, whereArgs);
+    }
+
+    public static int delete(SQLiteOpenHelper helper, Class<?> clazz, String whereClause, String[] whereArgs) {
+        final SQLiteDatabase database = helper.getWritableDatabase();
+        final TypeAdapter adapter = getAdapter(clazz);
+        return database.delete(adapter.getTableName(), whereClause, whereArgs);
+    }
+
+    public static Cursor rawQuery(SQLiteOpenHelper helper, String sql, String[] selectionArgs) {
+        final SQLiteDatabase database = helper.getReadableDatabase();
+        return database.rawQuery(sql, selectionArgs);
+    }
+
+    /**
+     * Map an object into a ContentValues object. NOTE: this object must be declared
+     * in class declaration.
+     *
+     * @param item The target item.
+     * @return a ContentValues object.
+     */
+    public static ContentValues toContentValues(Object item) {
+        final TypeAdapter adapter = getAdapter(item.getClass());
+        return adapter.asContentValues(item);
+    }
+
+    /**
+     * Create a object of class <b>T</b> and map data from cursor to it.
+     *
+     * @param cursor The cursor to read data.
+     * @param clazz  The target class for object.
+     * @return An object of class <b>T</b>
+     */
+    public static <T> T fromCursor(Cursor cursor, Class<? extends T> clazz) {
+        final TypeAdapter adapter = getAdapter(clazz);
+        Object newInstance = adapter.newObject();
+        adapter.map(cursor, newInstance);
+        return (T) newInstance;
     }
 
     private static TypeAdapter getAdapter(Class clazz) {

@@ -19,9 +19,10 @@ package com.example.shillelagh.model;
 import shillelagh.Id;
 
 public class Base {
-  @Id long id;
+    @Id
+    long _id;
 
   public long getId() {
-    return id;
+      return _id;
   }
 }

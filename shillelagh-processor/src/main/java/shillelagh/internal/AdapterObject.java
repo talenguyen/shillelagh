@@ -187,7 +187,7 @@ class AdapterObject {
     private void emitGetTableName(JavaWriter javaWriter) throws IOException {
         logger.d("emitDropTable");
         javaWriter.beginMethod(
-                "String", "geTableName", EnumSet.of(PUBLIC))
+                "String", "getTableName", EnumSet.of(PUBLIC))
                 .emitStatement("return \"%s\"", getTableName())
                 .endMethod();
     }
