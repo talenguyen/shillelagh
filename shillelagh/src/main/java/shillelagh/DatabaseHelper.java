@@ -23,7 +23,9 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 
 public final class DatabaseHelper {
@@ -77,6 +79,19 @@ public final class DatabaseHelper {
         return database.rawQuery(sql, selectionArgs);
     }
 
+    public static <T> List<T> rawQuery(SQLiteOpenHelper helper, Class<? extends T> clazz, String sql, String[] selectionArgs) {
+        final SQLiteDatabase database = helper.getReadableDatabase();
+        final Cursor cursor = database.rawQuery(sql, selectionArgs);
+        if (cursor != null) {
+            try {
+                return getList(cursor, clazz);
+            } finally {
+                cursor.close();
+            }
+        }
+        return null;
+    }
+
     /**
      * Map an object into a ContentValues object. NOTE: this object must be declared
      * in class declaration.
@@ -96,11 +111,32 @@ public final class DatabaseHelper {
      * @param clazz  The target class for object.
      * @return An object of class <b>T</b>
      */
-    public static <T> T fromCursor(Cursor cursor, Class<? extends T> clazz) {
+    public static <T> T getItem(Cursor cursor, Class<? extends T> clazz) {
         final TypeAdapter adapter = getAdapter(clazz);
         Object newInstance = adapter.newObject();
         adapter.map(cursor, newInstance);
         return (T) newInstance;
+    }
+
+    /**
+     * Create a List Object of class <b>T</b> and map data from cursor to it.
+     *
+     * @param cursor The cursor to read data.
+     * @param clazz  The target class for object.
+     * @return A List Object of class <b>T</b>
+     */
+    public static <T> List<T> getList(Cursor cursor, Class<? extends T> clazz) {
+        if (cursor.moveToFirst()) {
+            final List<T> result = new ArrayList<T>(cursor.getCount());
+            final TypeAdapter adapter = getAdapter(clazz);
+            do {
+                final T newObject = (T) adapter.newObject();
+                adapter.map(cursor, newObject);
+                result.add(newObject);
+            } while (cursor.moveToNext());
+            return result;
+        }
+        return null;
     }
 
     private static TypeAdapter getAdapter(Class clazz) {
