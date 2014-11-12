@@ -24,27 +24,29 @@ import com.example.shillelagh.model.Author;
 import com.example.shillelagh.model.Book;
 import com.example.shillelagh.model.Chapter;
 
-import shillelagh.DatabaseHelper;
+import tale.androiddb.DatabaseHelper;
 
 public class ExampleSqliteHelper extends SQLiteOpenHelper {
-  private static final String DATABASE_NAME = "shillelagh_example.db";
-  private static final int DATABASE_VERSION = 6;
+    private static final String DATABASE_NAME = "shillelagh_example.db";
+    private static final int DATABASE_VERSION = 6;
 
-  public ExampleSqliteHelper(Context context) {
-    super(context, DATABASE_NAME, null, DATABASE_VERSION);
-  }
+    public ExampleSqliteHelper(Context context) {
+        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+    }
 
-  @Override public void onCreate(SQLiteDatabase db) {
-      DatabaseHelper.createTable(db, Author.class);
-      DatabaseHelper.createTable(db, Book.class);
-      DatabaseHelper.createTable(db, Chapter.class);
-  }
+    @Override
+    public void onCreate(SQLiteDatabase db) {
+        DatabaseHelper.createTable(db, Author.class);
+        DatabaseHelper.createTable(db, Book.class);
+        DatabaseHelper.createTable(db, Chapter.class);
+    }
 
-  @Override public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-    // Simplistic solution, you will lose your data though, good for debug builds bad for prod
-      DatabaseHelper.dropTable(db, Author.class);
-      DatabaseHelper.dropTable(db, Book.class);
-      DatabaseHelper.dropTable(db, Chapter.class);
-    onCreate(db);
-  }
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        // Simplistic solution, you will lose your data though, good for debug builds bad for prod
+        DatabaseHelper.dropTable(db, Author.class);
+        DatabaseHelper.dropTable(db, Book.class);
+        DatabaseHelper.dropTable(db, Chapter.class);
+        onCreate(db);
+    }
 }

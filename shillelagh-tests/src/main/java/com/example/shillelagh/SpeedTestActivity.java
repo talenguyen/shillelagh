@@ -18,26 +18,17 @@ package com.example.shillelagh;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.content.SharedPreferences;
 import android.os.Build;
-import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.widget.TextView;
+
 import com.example.shillelagh.model.TestPrimitiveTable;
+
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
 import java.util.Random;
-import java.util.Stack;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+
 import rx.Observable;
 import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
-import rx.functions.Func1;
-import rx.schedulers.Schedulers;
-import shillelagh.Shillelagh;
 
 public class SpeedTestActivity extends Activity {
 
@@ -63,147 +54,146 @@ public class SpeedTestActivity extends Activity {
         }
       }).cache();
 
-  @Override protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    setContentView(R.layout.activity_speed_test);
-
-    setupHeaders();
-
-    final Shillelagh shillelagh = new Shillelagh(new TestSQLiteOpenHelper(this));
-    insertValues.flatMap(new Func1<Queue<TestPrimitiveTable>, Observable<Integer>>() {
-      @Override public Observable<Integer> call(Queue<TestPrimitiveTable> testPrimitiveTables) {
-        return runWrites(shillelagh, testPrimitiveTables);
-      }
-    }).subscribeOn(Schedulers.computation()) //
-        .observeOn(AndroidSchedulers.mainThread()) //
-        .doOnNext(new Action1<Integer>() {
-          @Override public void call(Integer writes) {
-            findTextViewById(R.id.writes_per_second) //
-                .setText(String.valueOf(writes));
-          }
-        }) //
-        .flatMap(new Func1<Integer, Observable<Queue<TestPrimitiveTable>>>() {
-          @Override public Observable<Queue<TestPrimitiveTable>> call(Integer integer) {
-            return insertValues;
-          }
-        }) //
-        .flatMap(new Func1<Queue<TestPrimitiveTable>, Observable<Integer>>() {
-          @Override public Observable<Integer> call(Queue<TestPrimitiveTable> queue) {
-            return runReads(shillelagh, queue);
-          }
-        }) //
-        .subscribeOn(Schedulers.computation()) //
-        .observeOn(AndroidSchedulers.mainThread()) //
-        .doOnNext(new Action1<Integer>() {
-          @Override public void call(Integer reads) {
-            findTextViewById(R.id.reads_per_second) //
-                .setText(String.valueOf(reads));
-          }
-        }) //
-        .flatMap(new Func1<Integer, Observable<Long>>() {
-          @Override public Observable<Long> call(Integer integer) {
-            return runSelect1(shillelagh);
-          }
-        }) //
-        .subscribeOn(Schedulers.computation()) //
-        .observeOn(AndroidSchedulers.mainThread()) //
-        .doOnNext(new Action1<Long>() {
-          @Override public void call(Long time) {
-            findTextViewById(R.id.select_time_1).setText(time + "ms");
-          }
-        }) //
-        .flatMap(new Func1<Long, Observable<Long>>() {
-          @Override public Observable<Long> call(Long aLong) {
-            return runSelect2(shillelagh);
-          }
-        }) //
-        .subscribeOn(Schedulers.computation()) //
-        .observeOn(AndroidSchedulers.mainThread()) //
-        .subscribe(new Action1<Long>() {
-          @Override public void call(Long time) {
-            findTextViewById(R.id.select_time_2).setText(time + "ms");
-          }
-        });
-  }
-
-  private Observable<Integer> runWrites(final Shillelagh shillelagh,
-      final Queue<TestPrimitiveTable> values) {
-    return Observable.create(new Observable.OnSubscribe<Integer>() {
-      @Override public void call(Subscriber<? super Integer> subscriber) {
-        Queue<TestPrimitiveTable> valueQueue = new LinkedList<TestPrimitiveTable>(values);
-        int inserts = 0;
-        for (long stop = System.nanoTime() + TimeUnit.SECONDS.toNanos(1);
-            System.nanoTime() < stop; ) {
-          shillelagh.insert(valueQueue.poll());
-          inserts++;
-        }
-
-        subscriber.onNext(inserts);
-        subscriber.onCompleted();
-      }
-    });
-  }
-
-  private Observable<Integer> runReads(final Shillelagh shillelagh,
-      final Queue<TestPrimitiveTable> values) {
-    return Observable.create(new Observable.OnSubscribe<Integer>() {
-      @Override public void call(final Subscriber<? super Integer> subscriber) {
-        final String inserted = "inserted";
-        final SharedPreferences sharedPreferences =
-            PreferenceManager.getDefaultSharedPreferences(SpeedTestActivity.this);
-
-        if (!sharedPreferences.getBoolean(inserted, false)) {
-          // Insert a bunch
-          for (; !values.isEmpty(); ) {
-            shillelagh.insert(values.poll());
-          }
-          final SharedPreferences.Editor editor = sharedPreferences.edit();
-          editor.putBoolean(inserted, true);
-          editor.apply();
-        }
-
-        final AtomicInteger reads = new AtomicInteger(0);
-        final long stop = System.nanoTime() + TimeUnit.SECONDS.toNanos(1);
-        shillelagh.get(TestPrimitiveTable.class).subscribe(new Action1<TestPrimitiveTable>() {
-          @Override public void call(TestPrimitiveTable testBoxedPrimitivesTable) {
-            if (System.nanoTime() < stop) {
-              reads.getAndAdd(1);
-            }
-          }
-        });
-
-        subscriber.onNext(reads.get());
-        subscriber.onCompleted();
-      }
-    });
-  }
-
-  private Observable<Long> runSelect1(final Shillelagh shillelagh) {
-    // we already know there are 50,000 some rows inserted in runReads
-    final long startTime = System.currentTimeMillis();
-    return shillelagh.get(TestPrimitiveTable.class)
-        .filter(new Func1<TestPrimitiveTable, Boolean>() {
-          @Override public Boolean call(TestPrimitiveTable testPrimitiveTable) {
-            return testPrimitiveTable.getId() == 25000;
-          }
-        })
-        .map(new Func1<TestPrimitiveTable, Long>() {
-          @Override public Long call(TestPrimitiveTable testPrimitiveTable) {
-            return System.currentTimeMillis() - startTime;
-          }
-        });
-  }
-
-  private Observable<Long> runSelect2(final Shillelagh shillelagh) {
-    final long start = System.currentTimeMillis();
-    return shillelagh.createQuery(TestPrimitiveTable.class, "SELECT * FROM %s WHERE id = 25000",
-        Shillelagh.getTableName(TestPrimitiveTable.class))
-        .map(new Func1<TestPrimitiveTable, Long>() {
-          @Override public Long call(TestPrimitiveTable testPrimitiveTable) {
-            return System.currentTimeMillis() - start;
-          }
-        });
-  }
+//  @Override protected void onCreate(Bundle savedInstanceState) {
+//    super.onCreate(savedInstanceState);
+//    setContentView(R.layout.activity_speed_test);
+//
+//    setupHeaders();
+//
+//    insertValues.flatMap(new Func1<Queue<TestPrimitiveTable>, Observable<Integer>>() {
+//      @Override public Observable<Integer> call(Queue<TestPrimitiveTable> testPrimitiveTables) {
+//        return runWrites(shillelagh, testPrimitiveTables);
+//      }
+//    }).subscribeOn(Schedulers.computation()) //
+//        .observeOn(AndroidSchedulers.mainThread()) //
+//        .doOnNext(new Action1<Integer>() {
+//          @Override public void call(Integer writes) {
+//            findTextViewById(R.id.writes_per_second) //
+//                .setText(String.valueOf(writes));
+//          }
+//        }) //
+//        .flatMap(new Func1<Integer, Observable<Queue<TestPrimitiveTable>>>() {
+//          @Override public Observable<Queue<TestPrimitiveTable>> call(Integer integer) {
+//            return insertValues;
+//          }
+//        }) //
+//        .flatMap(new Func1<Queue<TestPrimitiveTable>, Observable<Integer>>() {
+//          @Override public Observable<Integer> call(Queue<TestPrimitiveTable> queue) {
+//            return runReads(shillelagh, queue);
+//          }
+//        }) //
+//        .subscribeOn(Schedulers.computation()) //
+//        .observeOn(AndroidSchedulers.mainThread()) //
+//        .doOnNext(new Action1<Integer>() {
+//          @Override public void call(Integer reads) {
+//            findTextViewById(R.id.reads_per_second) //
+//                .setText(String.valueOf(reads));
+//          }
+//        }) //
+//        .flatMap(new Func1<Integer, Observable<Long>>() {
+//          @Override public Observable<Long> call(Integer integer) {
+//            return runSelect1(shillelagh);
+//          }
+//        }) //
+//        .subscribeOn(Schedulers.computation()) //
+//        .observeOn(AndroidSchedulers.mainThread()) //
+//        .doOnNext(new Action1<Long>() {
+//          @Override public void call(Long time) {
+//            findTextViewById(R.id.select_time_1).setText(time + "ms");
+//          }
+//        }) //
+//        .flatMap(new Func1<Long, Observable<Long>>() {
+//          @Override public Observable<Long> call(Long aLong) {
+//            return runSelect2(shillelagh);
+//          }
+//        }) //
+//        .subscribeOn(Schedulers.computation()) //
+//        .observeOn(AndroidSchedulers.mainThread()) //
+//        .subscribe(new Action1<Long>() {
+//          @Override public void call(Long time) {
+//            findTextViewById(R.id.select_time_2).setText(time + "ms");
+//          }
+//        });
+//  }
+//
+//  private Observable<Integer> runWrites(final Shillelagh shillelagh,
+//      final Queue<TestPrimitiveTable> values) {
+//    return Observable.create(new Observable.OnSubscribe<Integer>() {
+//      @Override public void call(Subscriber<? super Integer> subscriber) {
+//        Queue<TestPrimitiveTable> valueQueue = new LinkedList<TestPrimitiveTable>(values);
+//        int inserts = 0;
+//        for (long stop = System.nanoTime() + TimeUnit.SECONDS.toNanos(1);
+//            System.nanoTime() < stop; ) {
+//          shillelagh.insert(valueQueue.poll());
+//          inserts++;
+//        }
+//
+//        subscriber.onNext(inserts);
+//        subscriber.onCompleted();
+//      }
+//    });
+//  }
+//
+//  private Observable<Integer> runReads(final Shillelagh shillelagh,
+//      final Queue<TestPrimitiveTable> values) {
+//    return Observable.create(new Observable.OnSubscribe<Integer>() {
+//      @Override public void call(final Subscriber<? super Integer> subscriber) {
+//        final String inserted = "inserted";
+//        final SharedPreferences sharedPreferences =
+//            PreferenceManager.getDefaultSharedPreferences(SpeedTestActivity.this);
+//
+//        if (!sharedPreferences.getBoolean(inserted, false)) {
+//          // Insert a bunch
+//          for (; !values.isEmpty(); ) {
+//            shillelagh.insert(values.poll());
+//          }
+//          final SharedPreferences.Editor editor = sharedPreferences.edit();
+//          editor.putBoolean(inserted, true);
+//          editor.apply();
+//        }
+//
+//        final AtomicInteger reads = new AtomicInteger(0);
+//        final long stop = System.nanoTime() + TimeUnit.SECONDS.toNanos(1);
+//        shillelagh.get(TestPrimitiveTable.class).subscribe(new Action1<TestPrimitiveTable>() {
+//          @Override public void call(TestPrimitiveTable testBoxedPrimitivesTable) {
+//            if (System.nanoTime() < stop) {
+//              reads.getAndAdd(1);
+//            }
+//          }
+//        });
+//
+//        subscriber.onNext(reads.get());
+//        subscriber.onCompleted();
+//      }
+//    });
+//  }
+//
+//  private Observable<Long> runSelect1(final Shillelagh shillelagh) {
+//    // we already know there are 50,000 some rows inserted in runReads
+//    final long startTime = System.currentTimeMillis();
+//    return shillelagh.get(TestPrimitiveTable.class)
+//        .filter(new Func1<TestPrimitiveTable, Boolean>() {
+//          @Override public Boolean call(TestPrimitiveTable testPrimitiveTable) {
+//            return testPrimitiveTable.getId() == 25000;
+//          }
+//        })
+//        .map(new Func1<TestPrimitiveTable, Long>() {
+//          @Override public Long call(TestPrimitiveTable testPrimitiveTable) {
+//            return System.currentTimeMillis() - startTime;
+//          }
+//        });
+//  }
+//
+//  private Observable<Long> runSelect2(final Shillelagh shillelagh) {
+//    final long start = System.currentTimeMillis();
+//    return shillelagh.createQuery(TestPrimitiveTable.class, "SELECT * FROM %s WHERE id = 25000",
+//        Shillelagh.getTableName(TestPrimitiveTable.class))
+//        .map(new Func1<TestPrimitiveTable, Long>() {
+//          @Override public Long call(TestPrimitiveTable testPrimitiveTable) {
+//            return System.currentTimeMillis() - start;
+//          }
+//        });
+//  }
 
   /** Setup the info headers */
   @TargetApi(Build.VERSION_CODES.DONUT)

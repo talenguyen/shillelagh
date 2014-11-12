@@ -18,10 +18,10 @@ package com.example.shillelagh.model;
 
 import java.util.List;
 
-import shillelagh.Field;
-import shillelagh.Id;
-import shillelagh.OrmOnly;
-import shillelagh.Table;
+import tale.androiddb.Field;
+import tale.androiddb.Id;
+import tale.androiddb.OrmOnly;
+import tale.androiddb.Table;
 
 @Table public class TestOneToMany {
   @Id long id;

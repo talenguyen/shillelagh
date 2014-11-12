@@ -18,38 +18,41 @@ package com.example.shillelagh.model;
 
 import java.util.Date;
 
-import shillelagh.Field;
-import shillelagh.Id;
-import shillelagh.Table;
+import tale.androiddb.Field;
+import tale.androiddb.Id;
+import tale.androiddb.Table;
 
 @Table
 public class TestJavaObjectsTable {
-  @Id long id;
+    @Id
+    long id;
 
-  @Field String aString;
-  @Field Date aDate;
+    @Field
+    String aString;
+    @Field
+    Date aDate;
 
-  public long getId() {
-    return id;
-  }
+    public long getId() {
+        return id;
+    }
 
-  public void setId(long id) {
-    this.id = id;
-  }
+    public void setId(long id) {
+        this.id = id;
+    }
 
-  public String getaString() {
-    return aString;
-  }
+    public String getaString() {
+        return aString;
+    }
 
-  public void setaString(String aString) {
-    this.aString = aString;
-  }
+    public void setaString(String aString) {
+        this.aString = aString;
+    }
 
-  public Date getaDate() {
-    return aDate;
-  }
+    public Date getaDate() {
+        return aDate;
+    }
 
-  public void setaDate(Date aDate) {
-    this.aDate = aDate;
-  }
+    public void setaDate(Date aDate) {
+        this.aDate = aDate;
+    }
 }

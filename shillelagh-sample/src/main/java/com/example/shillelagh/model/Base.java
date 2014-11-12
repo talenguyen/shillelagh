@@ -16,7 +16,7 @@
 
 package com.example.shillelagh.model;
 
-import shillelagh.Id;
+import tale.androiddb.Id;
 
 public class Base {
     @Id

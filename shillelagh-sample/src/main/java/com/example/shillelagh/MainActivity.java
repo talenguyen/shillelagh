@@ -31,8 +31,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-import shillelagh.DatabaseHelper;
-import shillelagh.Shillelagh;
+import tale.androiddb.DatabaseHelper;
 
 public class MainActivity extends Activity {
 
@@ -42,7 +41,6 @@ public class MainActivity extends Activity {
     super.onCreate(savedInstanceState);
 
     ShillelaghApp shillelaghApp = ShillelaghApp.get(this);
-    final Shillelagh shillelagh = shillelaghApp.getShillelagh();
 
     Author author1 = new Author("Icculus");
 

@@ -18,9 +18,9 @@ package com.example.shillelagh.model;
 
 import java.io.Serializable;
 
-import shillelagh.Field;
-import shillelagh.Id;
-import shillelagh.Table;
+import tale.androiddb.Field;
+import tale.androiddb.Id;
+import tale.androiddb.Table;
 
 @Table public class TestBlobs {
   @Id long id;

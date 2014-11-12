@@ -16,9 +16,9 @@
 
 package com.example.shillelagh.model;
 
-import shillelagh.Field;
-import shillelagh.OrmOnly;
-import shillelagh.Table;
+import tale.androiddb.Field;
+import tale.androiddb.OrmOnly;
+import tale.androiddb.Table;
 
 @Table
 public class Author extends Base {

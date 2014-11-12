@@ -27,7 +27,7 @@ import com.example.shillelagh.model.TestOneToMany;
 import com.example.shillelagh.model.TestOneToOne;
 import com.example.shillelagh.model.TestPrimitiveTable;
 
-import shillelagh.Shillelagh;
+import tale.androiddb.DatabaseHelper;
 
 public class TestSQLiteOpenHelper extends SQLiteOpenHelper {
   public static final String DATABASE_NAME = "shillelagh_test.db";
@@ -38,26 +38,26 @@ public class TestSQLiteOpenHelper extends SQLiteOpenHelper {
   }
 
   @Override public void onCreate(SQLiteDatabase db) {
-    Shillelagh.createTable(db, TestBoxedPrimitivesTable.class);
-    Shillelagh.createTable(db, TestPrimitiveTable.class);
-    Shillelagh.createTable(db, TestJavaObjectsTable.class);
-    Shillelagh.createTable(db, TestBlobs.class);
-    Shillelagh.createTable(db, TestOneToOne.class);
-    Shillelagh.createTable(db, TestOneToOne.Child.class);
-    Shillelagh.createTable(db, TestOneToMany.class);
-    Shillelagh.createTable(db, TestOneToMany.Child.class);
+      DatabaseHelper.createTable(db, TestBoxedPrimitivesTable.class);
+      DatabaseHelper.createTable(db, TestPrimitiveTable.class);
+      DatabaseHelper.createTable(db, TestJavaObjectsTable.class);
+      DatabaseHelper.createTable(db, TestBlobs.class);
+      DatabaseHelper.createTable(db, TestOneToOne.class);
+      DatabaseHelper.createTable(db, TestOneToOne.Child.class);
+      DatabaseHelper.createTable(db, TestOneToMany.class);
+      DatabaseHelper.createTable(db, TestOneToMany.Child.class);
   }
 
   @Override public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     // Simplistic solution, you will lose your data though, good for debug builds bad for prod
-    Shillelagh.dropTable(db, TestPrimitiveTable.class);
-    Shillelagh.dropTable(db, TestBoxedPrimitivesTable.class);
-    Shillelagh.dropTable(db, TestPrimitiveTable.class);
-    Shillelagh.dropTable(db, TestBlobs.class);
-    Shillelagh.dropTable(db, TestOneToOne.class);
-    Shillelagh.dropTable(db, TestOneToOne.Child.class);
-    Shillelagh.dropTable(db, TestOneToMany.class);
-    Shillelagh.dropTable(db, TestOneToMany.Child.class);
+      DatabaseHelper.dropTable(db, TestPrimitiveTable.class);
+      DatabaseHelper.dropTable(db, TestBoxedPrimitivesTable.class);
+      DatabaseHelper.dropTable(db, TestPrimitiveTable.class);
+      DatabaseHelper.dropTable(db, TestBlobs.class);
+      DatabaseHelper.dropTable(db, TestOneToOne.class);
+      DatabaseHelper.dropTable(db, TestOneToOne.Child.class);
+      DatabaseHelper.dropTable(db, TestOneToMany.class);
+      DatabaseHelper.dropTable(db, TestOneToMany.Child.class);
     onCreate(db);
   }
 }

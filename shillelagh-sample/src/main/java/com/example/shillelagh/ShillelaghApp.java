@@ -23,44 +23,37 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Build;
 import android.os.StrictMode;
 
-import shillelagh.Shillelagh;
-
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public class ShillelaghApp extends Application {
 
-  /** Shillelagh Singleton */
-  private Shillelagh shillelagh;
+    /**
+     * Shillelagh Singleton
+     */
     private SQLiteOpenHelper sqliteOpenHelper;
 
     @Override
     public void onCreate() {
-    super.onCreate();
+        super.onCreate();
 
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-      StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
-          .detectAll()
-          .penaltyDeath()
-          .build());
-      StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
-          .detectAll()
-          .penaltyDeath()
-          .build());
-    }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+                    .detectAll()
+                    .penaltyDeath()
+                    .build());
+            StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
+                    .detectAll()
+                    .penaltyDeath()
+                    .build());
+        }
 
         sqliteOpenHelper = new ExampleSqliteHelper(this);
-    shillelagh = new Shillelagh(sqliteOpenHelper);
-  }
+    }
 
     public synchronized SQLiteOpenHelper getSqlOpenHelper() {
         return sqliteOpenHelper;
     }
 
-  /** Returns the instance of shillelagh for this application */
-  public Shillelagh getShillelagh() {
-    return shillelagh;
-  }
-
-  public static ShillelaghApp get(Context context) {
-    return (ShillelaghApp) context.getApplicationContext();
-  }
+    public static ShillelaghApp get(Context context) {
+        return (ShillelaghApp) context.getApplicationContext();
+    }
 }
